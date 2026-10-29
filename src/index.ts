@@ -1,4 +1,4 @@
-
+import { checkDatabase } from "./db-check";
 export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -53,7 +53,6 @@ function methodNotAllowed(allowed: string[]): Response {
     }
   );
 }
-
 async function handleHealth(
   request: Request,
   env: Env
@@ -62,16 +61,9 @@ async function handleHealth(
     return methodNotAllowed(["GET", "HEAD"]);
   }
 
-  try {
-    await env.DB.prepare("SELECT 1 AS result").first();
+  const result = await checkDatabase(env.DB);
 
-    return jsonResponse({
-      ok: true,
-      service: "system-abr",
-      database: "connected",
-      timestamp: new Date().toISOString()
-    });
-  } catch {
+  if (!result.connected) {
     return jsonResponse(
       {
         ok: false,
@@ -82,7 +74,15 @@ async function handleHealth(
       503
     );
   }
+
+  return jsonResponse({
+    ok: true,
+    service: "system-abr",
+    database: "connected",
+    timestamp: new Date().toISOString()
+  });
 }
+
 
 async function handleApi(
   request: Request,
