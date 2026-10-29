@@ -1,0 +1,27 @@
+
+{
+  "name": "system-abr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "System ABR - Arabic RTL business and accounting management system",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:create": "wrangler d1 create system-abr-db",
+    "db:migrate:local": "wrangler d1 migrations apply system-abr-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply system-abr-db --remote",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "jose": "^6.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20261029.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0",
+    "wrangler": "^4.40.0"
+  }
+}
