@@ -1,0 +1,44 @@
+
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "system-abr",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-29",
+  "workers_dev": true,
+
+  "observability": {
+    "enabled": true
+  },
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "system-abr-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "TENANT_COORDINATOR",
+        "class_name": "TenantCoordinator"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "TenantCoordinator"
+      ]
+    }
+  ]
+}
