@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#17112d">
+  <meta
+    name="description"
+    content="System ABR - نظام إدارة الأعمال والمبيعات والمشتريات والمخزون والحسابات."
+  >
+  <title>System ABR | إدارة الأعمال</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="/" aria-label="الصفحة الرئيسية">
+        <span class="brand-mark">ABR</span>
+        <span class="brand-copy">
+          <strong>System ABR</strong>
+          <small>إدارة أعمالك بذكاء</small>
+        </span>
+      </a>
+
+      <div class="workspace">
+        <span class="workspace-icon" aria-hidden="true">◆</span>
+        <div>
+          <strong>المؤسسة</strong>
+          <small>مساحة العمل الرئيسية</small>
+        </div>
+      </div>
+
+      <nav class="navigation" aria-label="القائمة الرئيسية">
+        <p class="nav-heading">الرئيسية</p>
+
+        <button class="nav-item active" type="button"
+          data-module="dashboard" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">⌂</span>
+          <span>لوحة التحكم</span>
+        </button>
+
+        <p class="nav-heading">إدارة الأعمال</p>
+
+        <button class="nav-item" type="button" data-module="sales">
+          <span class="nav-icon" aria-hidden="true">↗</span>
+          <span>المبيعات والفواتير</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="purchases">
+          <span class="nav-icon" aria-hidden="true">↙</span>
+          <span>المشتريات والمرتجعات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="inventory">
+          <span class="nav-icon" aria-hidden="true">▦</span>
+          <span>المنتجات والمخزون</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="parties">
+          <span class="nav-icon" aria-hidden="true">♙</span>
+          <span>العملاء والموردون</span>
+        </button>
+
+        <p class="nav-heading">الحسابات والتقارير</p>
+
+        <button class="nav-item" type="button" data-module="finance">
+          <span class="nav-icon" aria-hidden="true">¤</span>
+          <span>الحسابات والخزائن</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="expenses">
+          <span class="nav-icon" aria-hidden="true">−</span>
+          <span>المصروفات والإيرادات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="reports">
+          <span class="nav-icon" aria-hidden="true">▤</span>
+          <span>التقارير والأرباح</span>
+        </button>
+
+        <p class="nav-heading">الإدارة</p>
+
+        <button class="nav-item" type="button" data-module="users">
+          <span class="nav-icon" aria-hidden="true">♧</span>
+          <span>المستخدمون والصلاحيات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="audit">
+          <span class="nav-icon" aria-hidden="true">◷</span>
+          <span>سجل العمليات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-module="settings">
+          <span class="nav-icon" aria-hidden="true">⚙</span>
+          <span>إعدادات النظام</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>حالة الاتصال بالخادم</span>
+        <strong id="connection-status">جارٍ الفحص</strong>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button
+          class="icon-button menu-toggle"
+          id="menu-toggle"
+          type="button"
+          aria-label="فتح القائمة"
+          aria-controls="sidebar"
+          aria-expanded="false"
+        >☰</button>
+
+        <div class="page-heading">
+          <h1 id="page-title">لوحة التحكم</h1>
+          <p id="page-subtitle">نظرة عامة على نظام إدارة أعمالك</p>
+        </div>
+
+        <div class="topbar-actions">
+          <span class="system-label">
+            <span class="status-dot" aria-hidden="true"></span>
+            System ABR
+          </span>
+        </div>
+      </header>
+
+      <section class="content" id="main-content">
+        <div class="welcome-panel">
+          <div class="welcome-copy">
+            <span class="eyebrow">نظام إدارة الأعمال</span>
+            <h2>كل أعمالك في مكان واحد</h2>
+            <p>
+              إدارة المبيعات والمشتريات والمخزون والحسابات
+              من واجهة واحدة منظمة.
+            </p>
+          </div>
+
+          <div class="welcome-symbol" aria-hidden="true">
+            <span>ABR</span>
+            <span class="symbol-orbit"></span>
+          </div>
+        </div>
+
+        <section class="section-block" aria-labelledby="status-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="status-title">حالة النظام</h2>
+              <p>التحقق من اتصال الواجهة بالخادم وقاعدة البيانات</p>
+            </div>
+            <span class="status-badge" id="health-badge">جارٍ الفحص</span>
+          </div>
+
+          <div class="status-panel" role="status" aria-live="polite">
+            <span class="status-indicator" id="health-indicator"
+              aria-hidden="true"></span>
+            <div>
+              <strong id="health-title">جارٍ التحقق من الاتصال</strong>
+              <p id="health-message">
+                لم يتم تأكيد اتصال قاعدة البيانات بعد.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block" aria-labelledby="modules-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="modules-title">وحدات النظام</h2>
+              <p>اختاري الوحدة التي تريدين العمل عليها</p>
+            </div>
+          </div>
+
+          <div class="module-grid">
+            <button class="module-card" type="button" data-module="sales">
+              <span class="module-icon">↗</span>
+              <strong>المبيعات والفواتير</strong>
+              <span>الفواتير والمدفوعات والمرتجعات</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+
+            <button class="module-card" type="button" data-module="purchases">
+              <span class="module-icon">↙</span>
+              <strong>المشتريات</strong>
+              <span>فواتير الموردين وتكاليف الشراء</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+
+            <button class="module-card" type="button" data-module="inventory">
+              <span class="module-icon">▦</span>
+              <strong>المخزون والمنتجات</strong>
+              <span>الأصناف والكميات وحركة المخزون</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+
+            <button class="module-card" type="button" data-module="parties">
+              <span class="module-icon">♙</span>
+              <strong>العملاء والموردون</strong>
+              <span>بيانات التعاملات والأرصدة</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+
+            <button class="module-card" type="button" data-module="finance">
+              <span class="module-icon">¤</span>
+              <strong>الحسابات والخزائن</strong>
+              <span>الحسابات والتحصيل والتحويلات</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+
+            <button class="module-card" type="button" data-module="reports">
+              <span class="module-icon">▤</span>
+              <strong>التقارير</strong>
+              <span>تقارير المبيعات والمصروفات والأرباح</span>
+              <span class="module-link">فتح الوحدة ←</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="notice-panel">
+          <span class="notice-icon" aria-hidden="true">i</span>
+          <div>
+            <strong>تنبيه مهم</strong>
+            <p id="module-notice">
+              هذه واجهة البداية. الوحدات التشغيلية لا تُعد جاهزة
+              لمجرد ظهورها هنا؛ يجب ربطها بواجهات الخادم والتحقق
+              من الصلاحيات وقاعدة البيانات قبل استخدامها فعليًا.
+            </p>
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          <span>System ABR</span>
+          <span>نظام إدارة الأعمال والحسابات</span>
+        </footer>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
