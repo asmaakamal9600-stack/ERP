@@ -3,17 +3,14 @@ export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
   TENANT_COORDINATOR: DurableObjectNamespace;
-
-  // Secrets will be configured in Cloudflare later.
   APP_SECRET?: string;
   EMAIL_PROVIDER_API_KEY?: string;
   EMAIL_FROM?: string;
 }
 
 function jsonResponse(
-  data: unknown,
-  status = 200,
-  extraHeaders: Record<string, string> = {}
+  data: Record<string, unknown>,
+  status = 200
 ): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -21,51 +18,66 @@ function jsonResponse(
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
-      "Referrer-Policy": "strict-origin-when-cross-origin",
       "X-Frame-Options": "DENY",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
       "Content-Security-Policy":
-        "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
-      ...extraHeaders
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "style-src 'self'; " +
+        "img-src 'self' data: https:; " +
+        "connect-src 'self'; " +
+        "font-src 'self'; " +
+        "object-src 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'; " +
+        "frame-ancestors 'none'"
     }
   });
 }
 
-function securityHeaders(response: Response): Response {
-  const headers = new Headers(response.headers);
-
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  headers.set("X-Frame-Options", "DENY");
-  headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'"
+function methodNotAllowed(allowed: string[]): Response {
+  return new Response(
+    JSON.stringify({
+      ok: false,
+      error: "METHOD_NOT_ALLOWED"
+    }),
+    {
+      status: 405,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+        "Allow": allowed.join(", "),
+        "X-Content-Type-Options": "nosniff"
+      }
+    }
   );
-
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
 }
 
-async function healthCheck(env: Env): Promise<Response> {
+async function handleHealth(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return methodNotAllowed(["GET", "HEAD"]);
+  }
+
   try {
-    await env.DB.prepare("SELECT 1 AS ok").first();
+    await env.DB.prepare("SELECT 1 AS result").first();
 
     return jsonResponse({
-      success: true,
-      service: "System ABR",
-      status: "available",
-      database: "connected"
+      ok: true,
+      service: "system-abr",
+      database: "connected",
+      timestamp: new Date().toISOString()
     });
   } catch {
-    // Do not expose database errors or configuration secrets.
     return jsonResponse(
       {
-        success: false,
-        service: "System ABR",
-        status: "degraded",
-        database: "unavailable"
+        ok: false,
+        service: "system-abr",
+        database: "unavailable",
+        error: "DATABASE_UNAVAILABLE"
       },
       503
     );
@@ -77,68 +89,46 @@ async function handleApi(
   env: Env,
   url: URL
 ): Promise<Response> {
-  if (url.pathname === "/api/health" && request.method === "GET") {
-    return healthCheck(env);
+  if (url.pathname === "/api/health") {
+    const response = await handleHealth(request, env);
+
+    if (request.method === "HEAD") {
+      return new Response(null, {
+        status: response.status,
+        headers: response.headers
+      });
+    }
+
+    return response;
   }
-
-  if (url.pathname === "/api/health" && request.method === "HEAD") {
-    const response = await healthCheck(env);
-
-    return new Response(null, {
-      status: response.status,
-      headers: response.headers
-    });
-  }
-
-  return jsonResponse(
-    {
-      success: false,
-      error: "NOT_FOUND",
-      message: "مسار API غير موجود."
-    },
-    404
-  );
-}
-
-async function handleRequest(
-  request: Request,
-  env: Env
-): Promise<Response> {
-  const url = new URL(request.url);
 
   if (url.pathname.startsWith("/api/")) {
-    return handleApi(request, env, url);
-  }
-
-  if (request.method !== "GET" && request.method !== "HEAD") {
     return jsonResponse(
       {
-        success: false,
-        error: "METHOD_NOT_ALLOWED",
-        message: "طريقة الطلب غير مسموح بها."
+        ok: false,
+        error: "API_ROUTE_NOT_IMPLEMENTED",
+        message: "هذا المسار لم يتم تنفيذه بعد."
       },
-      405,
-      { Allow: "GET, HEAD" }
+      404
     );
   }
 
-  const assetResponse = await env.ASSETS.fetch(request);
-  return securityHeaders(assetResponse);
+  return env.ASSETS.fetch(request);
 }
 
 export default {
   async fetch(
     request: Request,
-    env: Env,
-    _ctx: ExecutionContext
+    env: Env
   ): Promise<Response> {
+    const url = new URL(request.url);
+
     try {
-      return await handleRequest(request, env);
+      return await handleApi(request, env, url);
     } catch {
-      // Avoid exposing stack traces, SQL details, or secrets.
       return jsonResponse(
         {
-          success: false,
+          ok: false,
           error: "INTERNAL_SERVER_ERROR",
           message: "حدث خطأ داخلي. حاولي مرة أخرى."
         },
@@ -148,37 +138,29 @@ export default {
   }
 };
 
-/**
- * Durable Object foundation.
- * This class is intentionally not yet used for financial operations.
- * Its coordination logic will be added only when the relevant API
- * and concurrency requirements are implemented.
- */
 export class TenantCoordinator {
   constructor(
-    private readonly ctx: DurableObjectState,
-    private readonly _env: Env
+    private readonly state: DurableObjectState,
+    private readonly env: Env
   ) {}
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
     if (
-      request.method === "GET" &&
-      url.pathname === "/internal/health"
+      url.pathname === "/internal/health" &&
+      request.method === "GET"
     ) {
       return jsonResponse({
-        success: true,
-        service: "System ABR coordinator",
-        status: "available"
+        ok: true,
+        service: "tenant-coordinator"
       });
     }
 
     return jsonResponse(
       {
-        success: false,
-        error: "NOT_IMPLEMENTED",
-        message: "هذه العملية لم تُنفذ بعد."
+        ok: false,
+        error: "NOT_IMPLEMENTED"
       },
       501
     );
